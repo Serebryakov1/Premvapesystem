@@ -1,1 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INHAIL — Available Products</title>
 
+<style>
+:root{
+  --bg:#020617;
+  --card:rgba(30,41,59,.85);
+  --accent:#22c55e;
+  --warn:#facc15;
+  --danger:#ef4444;
+  --border:rgba(148,163,184,.15);
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:radial-gradient(circle at top,#1e293b 0%,#020617 70%);
+  color:var(--text);
+}
+
+/* HEADER */
+header{
+  position:sticky;top:0;z-index:10;
+  background:rgba(2,6,23,.9);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.header-inner{
+  max-width:1200px;margin:auto;
+  padding:14px 16px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.logo{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  display:grid;place-items:center;
+  color:#022c22;font-weight:900;
+}
+.container{max-width:1200px;margin:auto;padding:16px}
+
+/* CARDS */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+.product-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+/* PRODUCT NAME HIGHLIGHT */
+.product-name{
+  position:relative;
+  font-size:18px;
+  font-weight:700;
+  color:#ecfeff;
+  padding-left:12px;
+}
+.product-name::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:3px;
+  bottom:3px;
+  width:4px;
+  border-radius:4px;
+  background:linear-gradient(180deg,#22c55e,#16a34a);
+}
+
+/* FLAVORS */
+.flavor-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:10px;
+}
+.flavor{
+  background:#020617;
+  border-radius:12px;
+  border:1px solid var(--border);
+  padding:10px;
+}
+.flavor.low{
+  box-shadow:0 0 0 1px var(--warn);
+}
+.flavor-name{
+  display:inline-block;
+  font-weight:600;
+  padding:2px 8px;
+  border-radius:8px;
+  background:rgba(34,197,94,.15);
+  box-shadow:inset 0 0 0 1px rgba(34,197,94,.35);
+  margin-bottom:4px;
+}
+
+/* EMPTY STATE */
+.empty{
+  text-align:center;
+  color:var(--muted);
+  padding:40px 10px;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-inner">
+    <div style="display:flex;gap:12px;align-items:center">
+      <div class="logo">IN</div>
+      <div>
+        <strong>INHAIL</strong>
+        <div style="font-size:12px;color:var(--muted)">Available Products</div>
+      </div>
+    </div>
+    <small style="color:var(--muted)">View Only</small>
+  </div>
+</header>
+
+<div class="container">
+  <div id="products"></div>
+</div>
+
+<script>
+/*
+  VIEW-ONLY DISPLAY
+  Uses existing localStorage data
+*/
+let data = JSON.parse(localStorage.getItem("vapeStock")) || [];
+
+function render(){
+  products.innerHTML="";
+
+  if(data.length === 0){
+    products.innerHTML = `
+      <div class="card empty">
+        No products available
+      </div>`;
+    return;
+  }
+
+  data.forEach(p=>{
+    // Only show flavors with stock > 0
+    const availableFlavors = p.flavors.filter(f => f.stock > 0);
+
+    if(availableFlavors.length === 0) return;
+
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`
+      <div class="product-header">
+        <div class="product-name">${p.name}</div>
+        <span style="color:var(--accent)">₱${p.price}</span>
+      </div>
+
+      <div class="flavor-list">
+        ${availableFlavors.map(f=>{
+          const cls=f.stock<=5?"low":"";
+          return`
+            <div class="flavor ${cls}">
+              <div class="flavor-name">${f.name}</div>
+              <div style="font-size:13px;color:var(--muted)">
+                Stock: ${f.stock}
+              </div>
+            </div>`;
+        }).join("")}
+      </div>`;
+    products.appendChild(d);
+  });
+}
+
+render();
+</script>
+
+</body>
+</html>
